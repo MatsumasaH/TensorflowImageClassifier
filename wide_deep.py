@@ -29,20 +29,18 @@ from official.utils.logs import hooks_helper
 from official.utils.logs import logger
 from official.utils.misc import model_helpers
 
-
+# Fields Names
 _CSV_COLUMNS = [
-    'age', 'workclass', 'fnlwgt', 'education', 'education_num',
-    'marital_status', 'occupation', 'relationship', 'race', 'gender',
-    'capital_gain', 'capital_loss', 'hours_per_week', 'native_country',
-    'income_bracket'
+    'is_valid', 'width', 'height'
 ]
 
-_CSV_COLUMN_DEFAULTS = [[0], [''], [0], [''], [0], [''], [''], [''], [''], [''],
-                        [0], [0], [0], [''], ['']]
+# Fields Default Values
+_CSV_COLUMN_DEFAULTS = [[0], [0], [0]]
 
+# Amount of data
 _NUM_EXAMPLES = {
-    'train': 32561,
-    'validation': 16281,
+    'train': 600,
+    'validation': 256,
 }
 
 
@@ -61,8 +59,8 @@ def define_wide_deep_flags():
       enum_values=['wide', 'deep', 'wide_deep'],
       help="Select model topology.")
 
-  flags_core.set_defaults(data_dir='/tmp/census_data',
-                          model_dir='/tmp/census_model',
+  flags_core.set_defaults(data_dir='csv_data',
+                          model_dir='csv_model',
                           train_epochs=40,
                           epochs_between_evals=2,
                           batch_size=40)
@@ -71,33 +69,39 @@ def define_wide_deep_flags():
 def build_model_columns():
   """Builds a set of wide and deep feature columns."""
   # Continuous columns
-  age = tf.feature_column.numeric_column('age')
-  education_num = tf.feature_column.numeric_column('education_num')
-  capital_gain = tf.feature_column.numeric_column('capital_gain')
-  capital_loss = tf.feature_column.numeric_column('capital_loss')
-  hours_per_week = tf.feature_column.numeric_column('hours_per_week')
 
+  age = tf.feature_column.numeric_column('age')                         # Numeric
+  education_num = tf.feature_column.numeric_column('education_num')     # Numeric
+  capital_gain = tf.feature_column.numeric_column('capital_gain')       # Numeric
+  capital_loss = tf.feature_column.numeric_column('capital_loss')       # Numeric
+  hours_per_week = tf.feature_column.numeric_column('hours_per_week')   # Numeric
+
+  # List of
   education = tf.feature_column.categorical_column_with_vocabulary_list(
       'education', [
           'Bachelors', 'HS-grad', '11th', 'Masters', '9th', 'Some-college',
           'Assoc-acdm', 'Assoc-voc', '7th-8th', 'Doctorate', 'Prof-school',
           '5th-6th', '10th', '1st-4th', 'Preschool', '12th'])
 
+  # List of
   marital_status = tf.feature_column.categorical_column_with_vocabulary_list(
       'marital_status', [
           'Married-civ-spouse', 'Divorced', 'Married-spouse-absent',
           'Never-married', 'Separated', 'Married-AF-spouse', 'Widowed'])
 
+  # List of
   relationship = tf.feature_column.categorical_column_with_vocabulary_list(
       'relationship', [
           'Husband', 'Not-in-family', 'Wife', 'Own-child', 'Unmarried',
           'Other-relative'])
 
+  # List of
   workclass = tf.feature_column.categorical_column_with_vocabulary_list(
       'workclass', [
           'Self-emp-not-inc', 'Private', 'State-gov', 'Federal-gov',
           'Local-gov', '?', 'Self-emp-inc', 'Without-pay', 'Never-worked'])
 
+  # List of
   # To show an example of hashing:
   occupation = tf.feature_column.categorical_column_with_hash_bucket(
       'occupation', hash_bucket_size=1000)
@@ -106,12 +110,18 @@ def build_model_columns():
   age_buckets = tf.feature_column.bucketized_column(
       age, boundaries=[18, 25, 30, 35, 40, 45, 50, 55, 60, 65])
 
+  # Everything Here is Categorical
   # Wide columns and deep columns.
   base_columns = [
-      education, marital_status, relationship, workclass, occupation,
+      education,
+      marital_status,
+      relationship,
+      workclass,
+      occupation,
       age_buckets,
   ]
 
+  # Determine Relationship
   crossed_columns = [
       tf.feature_column.crossed_column(
           ['education', 'occupation'], hash_bucket_size=1000),
@@ -119,8 +129,10 @@ def build_model_columns():
           [age_buckets, 'education', 'occupation'], hash_bucket_size=1000),
   ]
 
+  # wide_colums = categorical + relationship
   wide_columns = base_columns + crossed_columns
 
+  # Everything but age_bucket (Because Age is already heere)
   deep_columns = [
       age,
       education_num,
@@ -135,6 +147,7 @@ def build_model_columns():
       tf.feature_column.embedding_column(occupation, dimension=8),
   ]
 
+  # Categorical and Everything
   return wide_columns, deep_columns
 
 
@@ -149,17 +162,20 @@ def build_estimator(model_dir, model_type):
       session_config=tf.ConfigProto(device_count={'GPU': 0}))
 
   if model_type == 'wide':
+      # Use only Wide
     return tf.estimator.LinearClassifier(
         model_dir=model_dir,
         feature_columns=wide_columns,
         config=run_config)
   elif model_type == 'deep':
+      # Use only Deep
     return tf.estimator.DNNClassifier(
         model_dir=model_dir,
         feature_columns=deep_columns,
         hidden_units=hidden_units,
         config=run_config)
   else:
+      #  Use both of them
     return tf.estimator.DNNLinearCombinedClassifier(
         model_dir=model_dir,
         linear_feature_columns=wide_columns,
@@ -178,8 +194,8 @@ def input_fn(data_file, num_epochs, shuffle, batch_size):
     print('Parsing', data_file)
     columns = tf.decode_csv(value, record_defaults=_CSV_COLUMN_DEFAULTS)
     features = dict(zip(_CSV_COLUMNS, columns))
-    labels = features.pop('income_bracket')
-    return features, tf.equal(labels, '>50K')
+    labels = features.pop('is_valid')
+    return features, tf.equal(labels, '1')
 
   # Extract lines from input files using the Dataset API.
   dataset = tf.data.TextLineDataset(data_file)

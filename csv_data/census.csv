@@ -1,0 +1,15 @@
+age:28 x bucket
+workclass:Local-gov x
+fnlwgt:336951                       Not Used
+education:Assoc-acdm x
+education_num:12 x
+marital_status:Married-civ-spouse x
+occupation:Protective-serv x
+relationship:Husband x
+race:White                          Not Used
+gender:Male                         Not Used
+capital_gain:0 x
+capital_loss:0 x
+hours_per_week:40                   Not Used
+native_country:United-States        Not Used
+income_bracket:>50K                 Not Used
