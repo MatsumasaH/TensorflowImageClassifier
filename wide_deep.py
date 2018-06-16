@@ -141,7 +141,7 @@ def input_fn(data_file, num_epochs, shuffle, batch_size):
     columns = tf.decode_csv(value, record_defaults=_CSV_COLUMN_DEFAULTS)
     features = dict(zip(_CSV_COLUMNS, columns))
     labels = features.pop('is_valid')
-    return features, tf.equal(labels, '1')
+    return features, tf.equal(labels, 1)
 
   # Extract lines from input files using the Dataset API.
   dataset = tf.data.TextLineDataset(data_file)
