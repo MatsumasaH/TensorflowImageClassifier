@@ -1,7 +1,49 @@
+#########################################################
+#########################################################
+# So Many Libraries...
+from __future__ import print_function
+import math
+from IPython import display
+from matplotlib import cm
+from matplotlib import gridspec
+from matplotlib import pyplot as plt
+import numpy as np
 import pandas as pd
+from sklearn import metrics
+import tensorflow as tf
+from tensorflow.python.data import Dataset
+#########################################################
+#########################################################
 
 def main():
-    pass
+
+    pandaDemo()
+
+    return 0
+
+    # Unknown
+    tf.logging.set_verbosity(tf.logging.ERROR)
+    # Panda Display Option
+    pd.options.display.max_rows = 10
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.max_colwidth', -1)
+    pd.options.display.float_format = '{:.1f}'.format
+
+    # Get Data and Convert it to DataFrame Object
+    california_housing_dataframe = pd.read_csv(
+        "https://storage.googleapis.com/mledu-datasets/california_housing_train.csv", sep=",")
+
+    # Randomize Data
+    california_housing_dataframe = california_housing_dataframe.reindex(
+        np.random.permutation(california_housing_dataframe.index))
+
+    # Modify Data a bit
+    california_housing_dataframe["median_house_value"] /= 1000.0
+
+    print(california_housing_dataframe)
+
+    print(california_housing_dataframe.describe())
+
 
 def pandaDemo():
     print("Panda Demo")
@@ -31,7 +73,7 @@ def pandaDemo():
 
     # Make Graph
     # You can not on this environment
-    # california_housing_dataframe.hist('housing_median_age')
+    california_housing_dataframe.hist('housing_median_age')
 
     # DataFrame is just like an array
     cities = pd.DataFrame({ 'City name': city_names, 'Population': population })
