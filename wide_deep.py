@@ -99,9 +99,11 @@ def build_model_columns():
 
 def build_estimator(model_dir, model_type):
     """Build an estimator appropriate for the given model type."""
+    # 作成したFeature Columsを変数に代入
     wide_columns, deep_columns = build_model_columns()
     hidden_units = [100, 75, 50, 25]
 
+    # GPUを使うように変更するだけ
     # Create a tf.estimator.RunConfig to ensure the model is run on CPU, which
     # trains faster than GPU for this model.
     run_config = tf.estimator.RunConfig().replace(
@@ -109,19 +111,25 @@ def build_estimator(model_dir, model_type):
 
     if model_type == 'wide':
         # Use only Wide
+        # Use Linear Classifier
+        # Don't need hidden unitis
         return tf.estimator.LinearClassifier(
             model_dir=model_dir,
             feature_columns=wide_columns,
             config=run_config)
     elif model_type == 'deep':
         # Use only Deep
+        # Use DNNClassifier
+        # Use hidden_units
         return tf.estimator.DNNClassifier(
             model_dir=model_dir,
             feature_columns=deep_columns,
             hidden_units=hidden_units,
             config=run_config)
     else:
-        #  Use both of them
+        # Use both of them
+        # Use DNNLinearCombinedClassifier
+        # Ues hidden_units
         return tf.estimator.DNNLinearCombinedClassifier(
             model_dir=model_dir,
             linear_feature_columns=wide_columns,
@@ -244,9 +252,15 @@ def run_wide_deep(flags_obj):
 
 def main(_):
     with logger.benchmark_context(flags.FLAGS):
+        # Main Function
         run_wide_deep(flags.FLAGS)
 
 if __name__ == '__main__':
+    # ???
     tf.logging.set_verbosity(tf.logging.INFO)
+
+    # Set Up Global Variables
     define_wide_deep_flags()
+
+    # Execute Main
     absl_app.run(main)
