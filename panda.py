@@ -2,14 +2,19 @@
 #########################################################
 # So Many Libraries...
 from __future__ import print_function
+# Math
 import math
-from IPython import display
-from matplotlib import cm
-from matplotlib import gridspec
-from matplotlib import pyplot as plt
 import numpy as np
+# IPython
+from IPython import display
+# Panda
 import pandas as pd
+from matplotlib import cm
+from matplotlib import pyplot as plt
+from matplotlib import gridspec
+# ???
 from sklearn import metrics
+# Tensorflow
 import tensorflow as tf
 from tensorflow.python.data import Dataset
 #########################################################
@@ -236,7 +241,7 @@ def tensorflowMain():
         ################################################################################################################
         # Graph Size
         plt.figure(figsize=(15, 6))
-        # ???
+        # Put more than 1 graph
         plt.subplot(1, 2, 1)
         # Title
         plt.title("Learned Line by Period")
@@ -248,7 +253,7 @@ def tensorflowMain():
         sample = california_housing_dataframe.sample(n=300)
         # Scatter Plot Setting
         plt.scatter(sample[my_feature], sample[my_label])
-        # ???
+        # Just make Color Array
         colors = [cm.coolwarm(x) for x in np.linspace(-1, 1, periods)]
         ################################################################################################################
 
@@ -278,19 +283,24 @@ def tensorflowMain():
             root_mean_squared_errors.append(root_mean_squared_error)
             # Finally, track the weights and biases over time.
             # Apply some math to ensure that the data and line are plotted neatly.
+            # Calculate Maximum Height
             y_extents = np.array([0, sample[my_label].max()])
-
+            # Sprintf like
             weight = linear_regressor.get_variable_value('linear/linear_model/%s/weights' % input_feature)[0]
             bias = linear_regressor.get_variable_value('linear/linear_model/bias_weights')
-
+            # Do some complicated calculation here
             x_extents = (y_extents - bias) / weight
             x_extents = np.maximum(np.minimum(x_extents,
                                               sample[my_feature].max()),
                                    sample[my_feature].min())
             y_extents = weight * x_extents + bias
+            # Just Plot Different Color Graph
             plt.plot(x_extents, y_extents, color=colors[period])
+
+
         print("Model training finished.")
 
+        ################################################################################################################
         # Output a graph of loss metrics over periods.
         plt.subplot(1, 2, 2)
         plt.ylabel('RMSE')
@@ -298,6 +308,7 @@ def tensorflowMain():
         plt.title("Root Mean Squared Error vs. Periods")
         plt.tight_layout()
         plt.plot(root_mean_squared_errors)
+        ################################################################################################################
 
         # Output a table with calibration data.
         calibration_data = pd.DataFrame()
