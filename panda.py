@@ -19,29 +19,34 @@ def main():
     pass
 
 def tensorflowMain():
-    # Unknown
+    # To Only Display / Save Error Log
+    # You can disable if you want
     tf.logging.set_verbosity(tf.logging.ERROR)
 
-    # Panda Display Option
+    # 100 Rows would be displayed maximum
     pd.options.display.max_rows = 10
+    # No column limit
     pd.set_option('display.max_columns', None)
+    # No Clipping for the values
     pd.set_option('display.max_colwidth', -1)
+    # 0.05 will be 0.1
     pd.options.display.float_format = '{:.1f}'.format
 
     # Get Data and Convert it to DataFrame Object
     california_housing_dataframe = pd.read_csv(
         "https://storage.googleapis.com/mledu-datasets/california_housing_train.csv", sep=",")
 
-    # Randomize Data
+    # Randomize Data Order
     california_housing_dataframe = california_housing_dataframe.reindex(
         np.random.permutation(california_housing_dataframe.index))
 
-    # Modify Data a bit
+    # Divide Median House Value by 1000
     california_housing_dataframe["median_house_value"] /= 1000.0
 
-    # Display Test
-    #print(california_housing_dataframe)
-    #print(california_housing_dataframe.describe())
+    # Display Whole DataFrame
+    california_housing_dataframe
+    # Display Average and STD
+    california_housing_dataframe.describe()
 
     # Define the input feature: total_rooms.
     # Input Value
@@ -50,6 +55,7 @@ def tensorflowMain():
 
     # Configure a numeric feature column for total_rooms.
     # This is just label name
+    # This will go directly to linear_regressor
     feature_columns = [tf.feature_column.numeric_column("total_rooms")]
 
     # Define the label.
@@ -59,6 +65,7 @@ def tensorflowMain():
     # Use gradient descent as the optimizer for training the model.
     # Select optimizer with Mini-Batch Stochastic Gradient Descent(SGD)
     my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0000001)
+    # To avoid infinite loop or something?
     my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
 
     # Configure the linear regression model with our feature columns and optimizer.
@@ -82,8 +89,7 @@ def tensorflowMain():
         Returns:
           Tuple of (features, labels) for next data batch
         """
-        print("test")
-
+        print("The Input Function was Called")
         # Convert pandas data into a dict of np arrays.
         # dict() : Convert list object to dictionary
         # ex. List of Tuple, Tuple of List, List of Set
@@ -92,11 +98,11 @@ def tensorflowMain():
         features = {key: np.array(value) for key, value in dict(features).items()}
 
         # Construct a dataset, and configure batching/repeating.
-
         # Feed Full Datas that was received to the function
         ds = Dataset.from_tensor_slices((features, targets))  # warning: 2GB limit
-
         # Just setting batch size and num epoch variables
+        # num_epocks is not important, because there are 1000 steps mean 1000 * 1  = 1000 samples will be used
+        # That is not even 1 epoch, so there is no meaning to set up epoch here
         ds = ds.batch(batch_size).repeat(num_epochs)
 
         # Shuffle the data, if specified.
@@ -122,6 +128,8 @@ def tensorflowMain():
     # Create an input function for predictions.
     # Note: Since we're making just one prediction for each example, we don't
     # need to repeat or shuffle the data here.
+    # If you just limit my_feature and targets to one value. That's it
+    # You are supposed to get perfect prediction function
     prediction_input_fn = lambda: my_input_fn(my_feature, targets, num_epochs=1, shuffle=False)
 
     # Call predict() on the linear_regressor to make predictions.
@@ -152,35 +160,34 @@ def tensorflowMain():
     calibration_data = pd.DataFrame()
     calibration_data["predictions"] = pd.Series(predictions)
     calibration_data["targets"] = pd.Series(targets)
-    print(calibration_data.describe())
+    calibration_data.describe()
+    calibration_data
 
-
+    # This was horrible, And have no idea about how it went at all
+    # So Now We need to visualize the information
+    ####################################################################################################################
+    # Graph Plotting Sample ############################################################################################
     sample = california_housing_dataframe.sample(n=300)
-
     # Get the min and max total_rooms values.
     x_0 = sample["total_rooms"].min()
     x_1 = sample["total_rooms"].max()
-
     # Retrieve the final weight and bias generated during training.
     weight = linear_regressor.get_variable_value('linear/linear_model/total_rooms/weights')[0]
     bias = linear_regressor.get_variable_value('linear/linear_model/bias_weights')
-
     # Get the predicted median_house_values for the min and max total_rooms values.
     y_0 = weight * x_0 + bias
     y_1 = weight * x_1 + bias
-
     # Plot our regression line from (x_0, y_0) to (x_1, y_1).
     plt.plot([x_0, x_1], [y_0, y_1], c='r')
-
     # Label the graph axes.
     plt.ylabel("median_house_value")
     plt.xlabel("total_rooms")
-
     # Plot a scatter plot from our data sample.
     plt.scatter(sample["total_rooms"], sample["median_house_value"])
-
     # Display graph.
     plt.show()
+    ####################################################################################################################
+    ####################################################################################################################
 
     def train_model(learning_rate, steps, batch_size, input_feature="total_rooms"):
         """Trains a linear regression model of one feature.
@@ -194,11 +201,16 @@ def tensorflowMain():
             to use as input feature.
         """
 
+        # 10 Loops
         periods = 10
+        # Calculate steps for each period
         steps_per_period = steps / periods
 
+        # Prepare Feature Data
         my_feature = input_feature
         my_feature_data = california_housing_dataframe[[my_feature]]
+
+        # Prepare Label Data
         my_label = "median_house_value"
         targets = california_housing_dataframe[my_label]
 
@@ -206,30 +218,39 @@ def tensorflowMain():
         feature_columns = [tf.feature_column.numeric_column(my_feature)]
 
         # Create input functions.
-        print("training input preparation")
+        # Input, Target, Batch Size
         training_input_fn = lambda: my_input_fn(my_feature_data, targets, batch_size=batch_size)
-        print("preparation done")
-        print("prediction input preparation")
+
+        # Check Whole Data Without Shuffling
         prediction_input_fn = lambda: my_input_fn(my_feature_data, targets, num_epochs=1, shuffle=False)
-        print("preparation done")
 
         # Create a linear regressor object.
         my_optimizer = tf.train.GradientDescentOptimizer(learning_rate=learning_rate)
+        # Always 5
         my_optimizer = tf.contrib.estimator.clip_gradients_by_norm(my_optimizer, 5.0)
         linear_regressor = tf.estimator.LinearRegressor(
             feature_columns=feature_columns,
             optimizer=my_optimizer
         )
 
-        # Set up to plot the state of our model's line each period.
+        ################################################################################################################
+        # Graph Size
         plt.figure(figsize=(15, 6))
+        # ???
         plt.subplot(1, 2, 1)
+        # Title
         plt.title("Learned Line by Period")
+        # Y Label
         plt.ylabel(my_label)
+        # X Label
         plt.xlabel(my_feature)
+        # Number of Samples
         sample = california_housing_dataframe.sample(n=300)
+        # Scatter Plot Setting
         plt.scatter(sample[my_feature], sample[my_label])
+        # ???
         colors = [cm.coolwarm(x) for x in np.linspace(-1, 1, periods)]
+        ################################################################################################################
 
         # Train the model, but do so inside a loop so that we can periodically assess
         # loss metrics.
@@ -238,22 +259,17 @@ def tensorflowMain():
         root_mean_squared_errors = []
         for period in range(0, periods):
             # Train the model, starting from the prior state.
-            print("Training Starts")
             linear_regressor.train(
                 input_fn=training_input_fn,
                 steps=steps_per_period
             )
-            print("Training Ends")
             # Take a break and compute predictions.
-            print("Prediction Starts")
             predictions = linear_regressor.predict(input_fn=prediction_input_fn)
-            print("Prediction Ends")
-
-            print("Conversion Starts")
             predictions = np.array([item['predictions'][0] for item in predictions])
-            print("Conversion Ends")
+
 
             # Compute loss.
+            # Basically, Comparing Predictions and Targets
             root_mean_squared_error = math.sqrt(
                 metrics.mean_squared_error(predictions, targets))
             # Occasionally print the current loss.
@@ -290,14 +306,16 @@ def tensorflowMain():
         display.display(calibration_data.describe())
 
         print("Final RMSE (on training data): %0.2f" % root_mean_squared_error)
+    ####################################################################################################################
     # train_model(
     #     learning_rate=0.00002,
     #     steps=3000,
     #     batch_size=10
     # )
+    ####################################################################################################################
     train_model(
         learning_rate=0.00002,
-        steps=1000,
+        steps=500,
         batch_size=5,
         input_feature="population"
     )
