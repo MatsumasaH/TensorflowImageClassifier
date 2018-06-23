@@ -2,41 +2,48 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
-
 import argparse
 import tensorflow as tf
-
 import iris_data
+import pandas as pd
 ##########################################################
 """An Example of a DNNClassifier for the Iris dataset."""
 
 # Setting Up Comand Line Arguments
-parser = argparse.ArgumentParser()
+#parser = argparse.ArgumentParser()
 # Default Batch Size : 100
-parser.add_argument('--batch_size', default=100, type=int, help='batch size')
+#parser.add_argument('--batch_size', default=100, type=int, help='batch size')
 # Default Step Size : 1000
-parser.add_argument('--train_steps', default=1000, type=int,
-                    help='number of training steps')
+#parser.add_argument('--train_steps', default=1000, type=int,help='number of training steps')
 
 def main(argv):
     ####################################################################################################################
     # Parameters you need to change by data ############################################################################
     # Number of Label Type
-    num_type = 3
+    num_type = 2
     # List of Label Type
-    expected = ['Setosa', 'Versicolor', 'Virginica']
+    expected = ['Valid', 'None Valid']
     # Sample Data to Predict
     predict_x = {
-        'SepalLength': [5.1, 5.9, 6.9],
-        'SepalWidth': [3.3, 3.0, 3.1],
-        'PetalLength': [1.7, 4.2, 5.4],
-        'PetalWidth': [0.5, 1.5, 2.1],
+        'Width': [1000, 100, 400, 220],
+        'Height': [1000, 100, 200, 200],
     }
+    CSV_COLUMN_NAMES = ['Width', 'Height', 'isValid']
+    predict_x = pd.read_csv(
+        "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_train.csv",
+        names=CSV_COLUMN_NAMES).drop("isValid", axis=1)
+    # Dummy Class for Jupyter Notepad
+    class args:
+        pass
+    # Batch Size
+    args.batch_size = 100
+    # Train Steps
+    args.train_steps = 10000
     ####################################################################################################################
     ####################################################################################################################
 
     # Receive Command Line Arguments
-    args = parser.parse_args(argv[1:])
+    #args = parser.parse_args(argv[1:])
 
     # Fetch the data
     # Just get Dataframe Sets of Tran and Test
@@ -76,15 +83,10 @@ def main(argv):
                                                 labels=None,
                                                 batch_size=args.batch_size))
 
-    template = ('\nPrediction is "{}" ({:.1f}%), expected "{}"')
-
-    for pred_dict, expec in zip(predictions, expected):
-        class_id = pred_dict['class_ids'][0]
-        probability = pred_dict['probabilities'][class_id]
-
-        print(template.format(iris_data.SPECIES[class_id],
-                              100 * probability, expec))
-
+    tlist = list(predictions)
+    predict_x['Result'] = [i['class_ids'][0] for i in tlist]
+    predict_x['Probability'] = [i['probabilities'][0] for i in tlist]
+    print(predict_x)
 
 if __name__ == '__main__':
     # Enable Tensorflow Error Logging Function

@@ -1,19 +1,18 @@
 # Import Necessary Libraries
 import pandas as pd
 import tensorflow as tf
-
 ########################################################################################################################
 ########################################################################################################################
 # URLs of Train and Test data sets
-TRAIN_URL = "http://download.tensorflow.org/data/iris_training.csv"
-TEST_URL = "http://download.tensorflow.org/data/iris_test.csv"
-
+TRAIN_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_train.csv"
+TEST_URL = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_test.csv"
+isFileLocal = 1
+# Label Name
+LABEL_NAME = "isValid"
 # CSV Fields Structure
-CSV_COLUMN_NAMES = ['SepalLength', 'SepalWidth',
-                    'PetalLength', 'PetalWidth', 'Species']
-
+CSV_COLUMN_NAMES = ['Width', 'Height','isValid']
 # Label Possibilities
-SPECIES = ['Setosa', 'Versicolor', 'Virginica']
+SPECIES = ['Valid', 'None Valid']
 ########################################################################################################################
 ########################################################################################################################
 
@@ -24,15 +23,18 @@ def maybe_download():
 
     return train_path, test_path
 
-def load_data(y_name='Species'):
+def load_data(y_name=LABEL_NAME):
     """Returns the iris dataset as (train_x, train_y), (test_x, test_y)."""
-    train_path, test_path = maybe_download()
+    if isFileLocal == 0:
+        train_path, test_path = maybe_download()
+    else:
+        train_path, test_path = TRAIN_URL, TEST_URL
 
-    train = pd.read_csv(train_path, names=CSV_COLUMN_NAMES, header=0)
+    train = pd.read_csv(train_path, names=CSV_COLUMN_NAMES)
     # Recognize Last Series as Label Column
     train_x, train_y = train, train.pop(y_name)
 
-    test = pd.read_csv(test_path, names=CSV_COLUMN_NAMES, header=0)
+    test = pd.read_csv(test_path, names=CSV_COLUMN_NAMES)
     # Recognize Last Series as Label Column
     test_x, test_y = test, test.pop(y_name)
 
