@@ -19,6 +19,22 @@ parser.add_argument('--train_steps', default=1000, type=int,
                     help='number of training steps')
 
 def main(argv):
+    ####################################################################################################################
+    # Parameters you need to change by data ############################################################################
+    # Number of Label Type
+    num_type = 3
+    # List of Label Type
+    expected = ['Setosa', 'Versicolor', 'Virginica']
+    # Sample Data to Predict
+    predict_x = {
+        'SepalLength': [5.1, 5.9, 6.9],
+        'SepalWidth': [3.3, 3.0, 3.1],
+        'PetalLength': [1.7, 4.2, 5.4],
+        'PetalWidth': [0.5, 1.5, 2.1],
+    }
+    ####################################################################################################################
+    ####################################################################################################################
+
     # Receive Command Line Arguments
     args = parser.parse_args(argv[1:])
 
@@ -40,7 +56,7 @@ def main(argv):
         # Two hidden layers of 10 nodes each.
         hidden_units=[10, 10],
         # The model must choose between 3 classes.
-        n_classes=3)
+        n_classes=num_type)
 
     # Train the Model.
     classifier.train(
@@ -54,15 +70,6 @@ def main(argv):
                                                 args.batch_size))
 
     print('\nTest set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
-
-    # Generate predictions from the model
-    expected = ['Setosa', 'Versicolor', 'Virginica']
-    predict_x = {
-        'SepalLength': [5.1, 5.9, 6.9],
-        'SepalWidth': [3.3, 3.0, 3.1],
-        'PetalLength': [1.7, 4.2, 5.4],
-        'PetalWidth': [0.5, 1.5, 2.1],
-    }
 
     predictions = classifier.predict(
         input_fn=lambda:iris_data.eval_input_fn(predict_x,

@@ -2,6 +2,8 @@
 import pandas as pd
 import tensorflow as tf
 
+########################################################################################################################
+########################################################################################################################
 # URLs of Train and Test data sets
 TRAIN_URL = "http://download.tensorflow.org/data/iris_training.csv"
 TEST_URL = "http://download.tensorflow.org/data/iris_test.csv"
@@ -12,6 +14,8 @@ CSV_COLUMN_NAMES = ['SepalLength', 'SepalWidth',
 
 # Label Possibilities
 SPECIES = ['Setosa', 'Versicolor', 'Virginica']
+########################################################################################################################
+########################################################################################################################
 
 def maybe_download():
     """Just Download it to local"""
