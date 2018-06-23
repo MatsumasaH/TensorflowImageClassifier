@@ -1,17 +1,4 @@
-#  Copyright 2016 The TensorFlow Authors. All Rights Reserved.
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-"""An Example of a DNNClassifier for the Iris dataset."""
+# Import #################################################
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -20,25 +7,34 @@ import argparse
 import tensorflow as tf
 
 import iris_data
+##########################################################
+"""An Example of a DNNClassifier for the Iris dataset."""
 
-
+# Setting Up Comand Line Arguments
 parser = argparse.ArgumentParser()
+# Default Batch Size : 100
 parser.add_argument('--batch_size', default=100, type=int, help='batch size')
+# Default Step Size : 1000
 parser.add_argument('--train_steps', default=1000, type=int,
                     help='number of training steps')
 
 def main(argv):
+    # Receive Command Line Arguments
     args = parser.parse_args(argv[1:])
 
     # Fetch the data
+    # Just get Dataframe Sets of Tran and Test
     (train_x, train_y), (test_x, test_y) = iris_data.load_data()
 
     # Feature columns describe how to use the input.
+    # Set every feature columns as numeric
     my_feature_columns = []
     for key in train_x.keys():
         my_feature_columns.append(tf.feature_column.numeric_column(key=key))
 
     # Build 2 hidden layer DNN with 10, 10 units respectively.
+    # Set up 10,10 Hidden Layers
+    # And There are 3 types of label possibilities
     classifier = tf.estimator.DNNClassifier(
         feature_columns=my_feature_columns,
         # Two hidden layers of 10 nodes each.
@@ -84,5 +80,8 @@ def main(argv):
 
 
 if __name__ == '__main__':
+    # Enable Tensorflow Error Logging Function
     tf.logging.set_verbosity(tf.logging.INFO)
+
+    # Execute Main Function
     tf.app.run(main)

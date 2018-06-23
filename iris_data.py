@@ -1,14 +1,20 @@
+# Import Necessary Libraries
 import pandas as pd
 import tensorflow as tf
 
+# URLs of Train and Test data sets
 TRAIN_URL = "http://download.tensorflow.org/data/iris_training.csv"
 TEST_URL = "http://download.tensorflow.org/data/iris_test.csv"
 
+# CSV Fields Structure
 CSV_COLUMN_NAMES = ['SepalLength', 'SepalWidth',
                     'PetalLength', 'PetalWidth', 'Species']
+
+# Label Possibilities
 SPECIES = ['Setosa', 'Versicolor', 'Virginica']
 
 def maybe_download():
+    """Just Download it to local"""
     train_path = tf.keras.utils.get_file(TRAIN_URL.split('/')[-1], TRAIN_URL)
     test_path = tf.keras.utils.get_file(TEST_URL.split('/')[-1], TEST_URL)
 
@@ -19,9 +25,11 @@ def load_data(y_name='Species'):
     train_path, test_path = maybe_download()
 
     train = pd.read_csv(train_path, names=CSV_COLUMN_NAMES, header=0)
+    # Recognize Last Series as Label Column
     train_x, train_y = train, train.pop(y_name)
 
     test = pd.read_csv(test_path, names=CSV_COLUMN_NAMES, header=0)
+    # Recognize Last Series as Label Column
     test_x, test_y = test, test.pop(y_name)
 
     return (train_x, train_y), (test_x, test_y)
@@ -58,7 +66,8 @@ def eval_input_fn(features, labels, batch_size):
     # Return the dataset.
     return dataset
 
-
+########################################################################################################################
+########################################################################################################################
 # The remainder of this file contains a simple example of a csv parser,
 #     implemented using the `Dataset` class.
 
@@ -78,7 +87,6 @@ def _parse_line(line):
 
     return features, label
 
-
 def csv_input_fn(csv_path, batch_size):
     # Create a dataset containing the text lines.
     dataset = tf.data.TextLineDataset(csv_path).skip(1)
@@ -91,3 +99,6 @@ def csv_input_fn(csv_path, batch_size):
 
     # Return the dataset.
     return dataset
+########################################################################################################################
+########################################################################################################################
+
