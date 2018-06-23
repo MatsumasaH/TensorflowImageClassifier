@@ -317,6 +317,7 @@ def tensorflowMain():
         display.display(calibration_data.describe())
 
         print("Final RMSE (on training data): %0.2f" % root_mean_squared_error)
+        return calibration_data
     ####################################################################################################################
     # train_model(
     #     learning_rate=0.00002,
@@ -330,6 +331,41 @@ def tensorflowMain():
         batch_size=5,
         input_feature="population"
     )
+    # Create New Series on the dataframe
+    california_housing_dataframe["rooms_per_person"] = (
+        california_housing_dataframe["total_rooms"] / california_housing_dataframe["population"])
+
+    # Train Again with Different Input feature
+    calibration_data = train_model(
+        learning_rate=0.05,
+        steps=500,
+        batch_size=5,
+        input_feature="rooms_per_person")
+
+    # Create a graph of Predictions VS Targets
+    plt.figure(figsize=(15, 6))
+    plt.subplot(1, 2, 1)
+    plt.scatter(calibration_data["predictions"], calibration_data["targets"])
+
+    # Display Hist Graph of the data
+    plt.subplot(1, 2, 2)
+    _ = california_housing_dataframe["rooms_per_person"].hist()
+
+    # Clip the Data by using Lambda
+    california_housing_dataframe["rooms_per_person"] = (
+        california_housing_dataframe["rooms_per_person"]).apply(lambda x: min(x, 5))
+
+    _ = california_housing_dataframe["rooms_per_person"].hist()
+
+    # Train Again with Clipped Data
+    calibration_data = train_model(
+        learning_rate=0.05,
+        steps=500,
+        batch_size=5,
+        input_feature="rooms_per_person")
+
+    # Plot Again to see the difference
+    _ = plt.scatter(calibration_data["predictions"], calibration_data["targets"])
 
 def pandaDemo():
     print("Panda Demo")
