@@ -10,7 +10,7 @@ isFileLocal = 1
 # Label Name
 LABEL_NAME = "isValid"
 # CSV Fields Structure
-CSV_COLUMN_NAMES = ['Width', 'Height','isValid']
+CSV_COLUMN_NAMES = ['Width', 'Height', 'isValid']
 # Label Possibilities
 SPECIES = ['Valid', 'None Valid']
 ########################################################################################################################

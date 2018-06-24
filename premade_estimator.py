@@ -67,9 +67,12 @@ def main(argv):
         'Height': [1000, 100, 200, 200],
     }
     CSV_COLUMN_NAMES = ['Width', 'Height', 'isValid']
-    predict_x = pd.read_csv(
-        "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_train.csv",
-        names=CSV_COLUMN_NAMES).drop("isValid", axis=1)
+
+
+    PREDICTION_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"
+    predict_x = pd.read_csv(PREDICTION_URL,names=['Width', 'Height', 'file'])
+    predict_x, file_name = predict_x, predict_x.pop('file')
+
     # Dummy Class for Jupyter Notepad
     class args:
         pass
@@ -131,7 +134,9 @@ def main(argv):
     tlist = list(predictions)
     predict_x['Result'] = [i['class_ids'][0] for i in tlist]
     predict_x['Probability'] = [i['probabilities'][0] for i in tlist]
+    predict_x['File Name'] = file_name
     print(predict_x)
+    predict_x.to_csv("result.csv", index=False, header=False)
     print("elapsed_time:{0}".format(time.time() - start) + "[sec]")
 
 if __name__ == '__main__':
