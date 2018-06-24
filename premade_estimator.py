@@ -28,7 +28,7 @@ from matplotlib import gridspec
 #parser.add_argument('--train_steps', default=1000, type=int,help='number of training steps')
 
 
-def get_csv_from_image_folder(dir="F:/Data/Favorite", output="files.csv"):
+def get_csv_from_image_folder(dir="F:/Data/Main", output="C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"):
     files = os.listdir(dir)
     count = 1
     width = []
@@ -42,6 +42,13 @@ def get_csv_from_image_folder(dir="F:/Data/Favorite", output="files.csv"):
         print(count)
         try:
             im = cv2.imread(dir + "/" + file)
+            #########################################
+            # Check Wheter I can Print or Not #######
+            print(im.shape[0])
+            print(im.shape[1])
+            print(file)
+            #########################################
+            #########################################
             location.append(dir + "/" + file)
             width.append(im.shape[0])
             height.append(im.shape[1])
@@ -58,9 +65,8 @@ def get_csv_from_image_folder(dir="F:/Data/Favorite", output="files.csv"):
     print(df)
 
 def move_image_by_csv(
-        main_dir="F:/Data/Main/",
         des_dir="F:/Data/Category/",
-        setting_file="C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv",
+        setting_file="C:/Users/Hijiri/ml/models/official/image_classifier/csv_data/image_result.csv",
         format=['Width', 'Height', 'isValid', 'Probability', 'File']
     ):
     data = pd.read_csv(setting_file, names=format)
@@ -128,7 +134,7 @@ def main(argv):
 
     # Fetch the data
     # Just get Dataframe Sets of Tran and Test
-    (train_x, train_y), (test_x, test_y), predict_x, file_name = iris_data.load_data()
+    (train_x, train_y), (test_x, test_y), predict_x, file_name, result_path = iris_data.load_data()
 
     ####################################################################################################################
     # Best : 0.863
@@ -183,22 +189,17 @@ def main(argv):
         predict_x['Probability'] = [i['probabilities'][0] for i in tlist]
         predict_x['File Name'] = file_name
         print(predict_x)
-        predict_x.to_csv("result.csv", index=False, header=False)
+        predict_x.to_csv(result_path, index=False, header=False)
         print("elapsed_time:{0}".format(time.time() - start) + "[sec]")
     #############################################################################
     #############################################################################
 
 if __name__ == '__main__':
+    # Get Files Information to CSV File
+    get_csv_from_image_folder()
     # Enable Tensorflow Error Logging Function
     tf.logging.set_verbosity(tf.logging.INFO)
     # Execute Main Function
     tf.app.run(main)
-    # Get Image
-    # get_csv_from_image_folder(dir="F:/Data/Search", output="files.csv")
     # Move File
-    # move_image_by_csv(
-    #     main_dir="F:/Data/Search/",
-    #     des_dir="F:/Data/Category/",
-    #     setting_file="C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv",
-    #     format=['Width', 'Height', 'isValid', 'Probability', 'File']
-    # )
+    move_image_by_csv()

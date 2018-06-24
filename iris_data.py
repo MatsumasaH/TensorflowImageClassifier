@@ -4,9 +4,10 @@ import tensorflow as tf
 ########################################################################################################################
 ########################################################################################################################
 # URLs of Train and Test data sets
-TRAIN_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_train.csv"
+TRAIN_URL = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_train.csv"
 TEST_URL = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_test.csv"
-PREDICTION_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"
+PREDICTION_URL = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"
+PREDICTION_RESULT_URL = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv"
 isFileLocal = 1
 # Label Name
 LABEL_NAME = "isValid"
@@ -47,7 +48,7 @@ def load_data(y_name=LABEL_NAME):
     predict_x, file_name = predict_x, predict_x.pop(PREDICTION_SPECIAL_FIELD)
     ########################################################################################
 
-    return (train_x, train_y), (test_x, test_y), predict_x, file_name
+    return (train_x, train_y), (test_x, test_y), predict_x, file_name, PREDICTION_RESULT_URL
 
 
 def train_input_fn(features, labels, batch_size):
