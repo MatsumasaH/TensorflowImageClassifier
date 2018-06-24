@@ -14,6 +14,10 @@ import imghdr
 import os
 import shutil
 ##########################################################
+from matplotlib import cm
+from matplotlib import pyplot as plt
+from matplotlib import gridspec
+##########################################################
 """An Example of a DNNClassifier for the Iris dataset."""
 
 # Setting Up Comand Line Arguments
@@ -73,6 +77,23 @@ def move_image_by_csv(
             des = "60-100"
         des = des_dir + des + "/" + os.path.basename(target)
         shutil.move(target, des)
+
+def display_data(setting_file="C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv"):
+    data = pd.read_csv(setting_file, names=['Width', 'Height', 'Size', 'Ratio', 'isValid', 'Probability', 'Name'])
+    data.describe()
+    data.hist('Width')
+    data.hist('Height')
+    data.hist('Size')
+    data.hist('Ratio')
+    data.hist('isValid')
+    data.hist('Probability')
+    plt.hexbin(x=data["Height"] * data["Width"], y=data["Height"] / data["Width"], C=data["Probability"])
+    plt.show()
+    plt.hexbin(x=data["Height"], y=data["Width"], C=data["Probability"])
+    plt.show()
+    plt.xlim([0, 2000000])
+    plt.scatter(x=data["Height"] * data["Width"], y=data["Height"] / data["Width"], c=data["Probability"])
+    plt.show()
 
 def main(argv):
     print("Count Starting");
