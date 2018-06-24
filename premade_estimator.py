@@ -53,13 +53,13 @@ def get_csv_from_image_folder(dir="F:/Data/Favorite", output="files.csv"):
     df.to_csv(output, index=False, header=False)
     print(df)
 
-def move_image_by_csv():
-    # Categorizer ##################################################################################
-    main_dir = "F:/Data/Main/"
-    des_dir = "F:/Data/Category/"
-    setting_file = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv"
-    ################################################################################################
-    data = pd.read_csv(setting_file, names=['Width', 'Height', 'isValid', 'Probability', 'File'])
+def move_image_by_csv(
+        main_dir="F:/Data/Main/",
+        des_dir="F:/Data/Category/",
+        setting_file="C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv",
+        format=['Width', 'Height', 'isValid', 'Probability', 'File']
+    ):
+    data = pd.read_csv(setting_file, names=format)
     for index, row in data.iterrows():
         print("{} {} {} {} {}".format(row[0], row[1], row[2], row[3], row[4]))
         pro = row['Probability']
@@ -80,20 +80,6 @@ def main(argv):
     # Parameters you need to change by data ############################################################################
     # Number of Label Type
     num_type = 2
-    # List of Label Type
-    expected = ['Valid', 'None Valid']
-    # Sample Data to Predict
-    predict_x = {
-        'Width': [1000, 100, 400, 220],
-        'Height': [1000, 100, 200, 200],
-    }
-    CSV_COLUMN_NAMES = ['Width', 'Height', 'isValid']
-
-
-    PREDICTION_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"
-    predict_x = pd.read_csv(PREDICTION_URL,names=['Width', 'Height', 'file'])
-    predict_x, file_name = predict_x, predict_x.pop('file')
-
     # Dummy Class for Jupyter Notepad
     class args:
         pass
@@ -111,7 +97,18 @@ def main(argv):
 
     # Fetch the data
     # Just get Dataframe Sets of Tran and Test
-    (train_x, train_y), (test_x, test_y) = iris_data.load_data()
+    (train_x, train_y), (test_x, test_y), predict_x, file_name = iris_data.load_data()
+
+    ####################################################################################################################
+    # Best : 0.863
+    # I will add more information
+    def tfunction(t):
+        t['Size'] = t['Width'] * t['Height']
+        t['Ratio'] = t['Height'] / t['Width']
+    tfunction(train_x)
+    tfunction(test_x)
+    tfunction(predict_x)
+    ####################################################################################################################
 
     # Feature columns describe how to use the input.
     # Set every feature columns as numeric
@@ -125,7 +122,7 @@ def main(argv):
     classifier = tf.estimator.DNNClassifier(
         feature_columns=my_feature_columns,
         # Two hidden layers of 10 nodes each.
-        hidden_units=[10, 10, 10],
+        hidden_units=[100, 75, 50],
         # The model must choose between 3 classes.
         n_classes=num_type,
         model_dir="premade_estimator_model"
@@ -147,18 +144,18 @@ def main(argv):
         print('\nTest set accuracy: {accuracy:0.3f}\n'.format(**eval_result))
     #############################################################################
     #############################################################################
-
-    predictions = classifier.predict(
-        input_fn=lambda:iris_data.eval_input_fn(predict_x,
-                                                labels=None,
-                                                batch_size=args.batch_size))
-    tlist = list(predictions)
-    predict_x['Result'] = [i['class_ids'][0] for i in tlist]
-    predict_x['Probability'] = [i['probabilities'][0] for i in tlist]
-    predict_x['File Name'] = file_name
-    print(predict_x)
-    predict_x.to_csv("result.csv", index=False, header=False)
-    print("elapsed_time:{0}".format(time.time() - start) + "[sec]")
+    else:
+        predictions = classifier.predict(
+            input_fn=lambda:iris_data.eval_input_fn(predict_x,labels=None,batch_size=args.batch_size))
+        tlist = list(predictions)
+        predict_x['Result'] = [i['class_ids'][0] for i in tlist]
+        predict_x['Probability'] = [i['probabilities'][0] for i in tlist]
+        predict_x['File Name'] = file_name
+        print(predict_x)
+        predict_x.to_csv("result.csv", index=False, header=False)
+        print("elapsed_time:{0}".format(time.time() - start) + "[sec]")
+    #############################################################################
+    #############################################################################
 
 if __name__ == '__main__':
     # Enable Tensorflow Error Logging Function
@@ -166,4 +163,11 @@ if __name__ == '__main__':
     # Execute Main Function
     tf.app.run(main)
     # Get Image
-    # get_csv_from_image_folder()
+    # get_csv_from_image_folder(dir="F:/Data/Search", output="files.csv")
+    # Move File
+    # move_image_by_csv(
+    #     main_dir="F:/Data/Search/",
+    #     des_dir="F:/Data/Category/",
+    #     setting_file="C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv",
+    #     format=['Width', 'Height', 'isValid', 'Probability', 'File']
+    # )

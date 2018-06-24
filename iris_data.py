@@ -6,11 +6,14 @@ import tensorflow as tf
 # URLs of Train and Test data sets
 TRAIN_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_train.csv"
 TEST_URL = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_test.csv"
+PREDICTION_URL = "C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"
 isFileLocal = 1
 # Label Name
 LABEL_NAME = "isValid"
 # CSV Fields Structure
 CSV_COLUMN_NAMES = ['Width', 'Height', 'isValid']
+PREDICTION_CSV_COLUMN_NAMES = ['Width', 'Height', 'file']
+PREDICTION_SPECIAL_FIELD = 'file'
 # Label Possibilities
 SPECIES = ['Valid', 'None Valid']
 ########################################################################################################################
@@ -20,15 +23,16 @@ def maybe_download():
     """Just Download it to local"""
     train_path = tf.keras.utils.get_file(TRAIN_URL.split('/')[-1], TRAIN_URL)
     test_path = tf.keras.utils.get_file(TEST_URL.split('/')[-1], TEST_URL)
+    prediction_path = tf.keras.utils.get_file(TEST_URL.split('/')[-1], PREDICTION_URL)
 
-    return train_path, test_path
+    return train_path, test_path, prediction_path
 
 def load_data(y_name=LABEL_NAME):
     """Returns the iris dataset as (train_x, train_y), (test_x, test_y)."""
     if isFileLocal == 0:
-        train_path, test_path = maybe_download()
+        train_path, test_path, prediction_path = maybe_download()
     else:
-        train_path, test_path = TRAIN_URL, TEST_URL
+        train_path, test_path, prediction_path = TRAIN_URL, TEST_URL, PREDICTION_URL
 
     train = pd.read_csv(train_path, names=CSV_COLUMN_NAMES)
     # Recognize Last Series as Label Column
@@ -38,7 +42,12 @@ def load_data(y_name=LABEL_NAME):
     # Recognize Last Series as Label Column
     test_x, test_y = test, test.pop(y_name)
 
-    return (train_x, train_y), (test_x, test_y)
+    # Prepare Prediction CSV File #########################################################
+    predict_x = pd.read_csv(PREDICTION_URL, names=PREDICTION_CSV_COLUMN_NAMES)
+    predict_x, file_name = predict_x, predict_x.pop(PREDICTION_SPECIAL_FIELD)
+    ########################################################################################
+
+    return (train_x, train_y), (test_x, test_y), predict_x, file_name
 
 
 def train_input_fn(features, labels, batch_size):
