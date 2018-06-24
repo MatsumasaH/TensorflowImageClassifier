@@ -12,7 +12,7 @@ import pandas as pd
 import cv2
 import imghdr
 import os
-import pandas as pd
+import shutil
 ##########################################################
 """An Example of a DNNClassifier for the Iris dataset."""
 
@@ -24,7 +24,7 @@ import pandas as pd
 #parser.add_argument('--train_steps', default=1000, type=int,help='number of training steps')
 
 
-def get_csv_from_image_folder(dir="F:/Data/Favorite"):
+def get_csv_from_image_folder(dir="F:/Data/Favorite", output="files.csv"):
     files = os.listdir(dir)
     count = 1
     width = []
@@ -50,8 +50,29 @@ def get_csv_from_image_folder(dir="F:/Data/Favorite"):
     df['width'] = width
     df['height'] = height
     df['location'] = location
-    df.to_csv("files.csv", index=False, header=False)
+    df.to_csv(output, index=False, header=False)
     print(df)
+
+def move_image_by_csv():
+    # Categorizer ##################################################################################
+    main_dir = "F:/Data/Main/"
+    des_dir = "F:/Data/Category/"
+    setting_file = "C:/Users/Hijiri/ml\models/official/image_classifier/csv_data/image_result.csv"
+    ################################################################################################
+    data = pd.read_csv(setting_file, names=['Width', 'Height', 'isValid', 'Probability', 'File'])
+    for index, row in data.iterrows():
+        print("{} {} {} {} {}".format(row[0], row[1], row[2], row[3], row[4]))
+        pro = row['Probability']
+        target = row['File']
+        des = ""
+        if pro < 0.4:
+            des = "0-40"
+        elif pro < 0.6:
+            des = "40-60"
+        else:
+            des = "60-100"
+        des = des_dir + des + "/" + os.path.basename(target)
+        shutil.move(target, des)
 
 def main(argv):
     print("Count Starting");
