@@ -95,6 +95,16 @@ def display_data(setting_file="C:/Users\Hijiri/ml\models/official/image_classifi
     plt.scatter(x=data["Height"] * data["Width"], y=data["Height"] / data["Width"], c=data["Probability"])
     plt.show()
 
+def analyze_filename(folder="F:\Data\Favorite"):
+    files = os.listdir(folder)
+    df = pd.DataFrame()
+    df['File Name'] = files
+    df['Main Domain'] = df['File Name'].apply(lambda x:x.split("_")[0])
+    df['Sub 1'] = df['File Name'].apply(lambda x:x.split("_")[0] + "/"  + x.split("_")[1])
+    df['Sub 2'] = df['File Name'].apply(lambda x:x.split("_")[0] + "/"  + x.split("_")[1] + "/"  + x.split("_")[2])
+    df2 = df.groupby('Main Domain').size().reset_index(name='counts').sort_values(by='counts', ascending=False)
+    return df2
+
 def main(argv):
     print("Count Starting");
     ####################################################################################################################
