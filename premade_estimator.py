@@ -18,6 +18,10 @@ from matplotlib import cm
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 ##########################################################
+from model import OpenNsfwModel, InputType
+from image_utils import create_tensorflow_image_loader
+from image_utils import create_yahoo_image_loader
+##########################################################
 """An Example of a DNNClassifier for the Iris dataset."""
 
 # python classify_nsfw.py -m data/open_nsfw-weights.npy -l tensorflow test.jpg
@@ -29,6 +33,74 @@ from matplotlib import gridspec
 # Default Step Size : 1000
 #parser.add_argument('--train_steps', default=1000, type=int,help='number of training steps')
 
+def nsfw_main(setting_file="tmp.csv"):
+
+    data = pd.read_csv(setting_file, names=['location', 'nsfw'])
+    tarray = []
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    IMAGE_LOADER_TENSORFLOW = "tensorflow"
+    class args:
+        pass
+    args.input_file = "girl.jpg"
+    args.model_weights = "data/open_nsfw-weights.npy"
+    args.image_loader = IMAGE_LOADER_TENSORFLOW
+    args.input_type = InputType.TENSOR.name.lower()
+    model = OpenNsfwModel()
+    # This is important for reset graph
+    tf.reset_default_graph()
+
+    with tf.Session() as sess:
+
+        input_type = InputType[args.input_type.upper()]
+        model.build(weights_path=args.model_weights, input_type=input_type)
+
+        fn_load_image = None
+
+        if input_type == InputType.TENSOR:
+            if args.image_loader == IMAGE_LOADER_TENSORFLOW:
+                fn_load_image = create_tensorflow_image_loader(sess)
+            else:
+                fn_load_image = create_yahoo_image_loader()
+        elif input_type == InputType.BASE64_JPEG:
+            import base64
+            fn_load_image = lambda filename: np.array([base64.urlsafe_b64encode(open(filename, "rb").read())])
+        sess.run(tf.global_variables_initializer())
+
+        count = 1
+        for index, row in data.iterrows():
+            if count > 1000:
+               break
+            start = time.time()
+            image = fn_load_image(row[0])
+            predictions = \
+                sess.run(model.predictions,
+                         feed_dict={model.input: image})
+            print("Results for '{}'".format(row[0]))
+            print("\tSFW score:\t{}\n\tNSFW score:\t{}".format(*predictions[0]))
+            tarray.append(predictions[0][1])
+            print("elapsed_time:{0}".format(time.time() - start) + "[sec]")
+            count += 1
+
+    data['nsfw'] = tarray
+    data.to_csv(setting_file, index=False, header=False)
+    print(data)
+    return 0
+
+def get_csv(dir="F:/Data/Main", output="C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"):
+    files = os.listdir(dir)
+    count = 0
+    location = []
+    for file in files:
+        # if count > 10:
+        #     break
+        print(count)
+        location.append(dir + "/" + file)
+        count += 1
+    df = pd.DataFrame()
+    df['location'] = location
+    df.to_csv(output, index=False, header=False)
+    print(df)
 
 def get_csv_from_image_folder(dir="F:/Data/Main", output="C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"):
     files = os.listdir(dir)
