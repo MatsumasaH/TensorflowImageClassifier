@@ -69,8 +69,8 @@ def nsfw_main(setting_file="tmp.csv"):
 
         count = 1
         for index, row in data.iterrows():
-            if count > 1000:
-               break
+            # if count > 100:
+            #    break
             start = time.time()
             image = fn_load_image(row[0])
             predictions = \
