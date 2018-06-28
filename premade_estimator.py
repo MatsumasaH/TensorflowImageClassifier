@@ -92,8 +92,8 @@ def get_csv(dir="F:/Data/Main", output="C:/Users\Hijiri/ml\models/official/image
     count = 0
     location = []
     for file in files:
-        # if count > 10:
-        #     break
+        if count > 1000:
+            break
         print(count)
         location.append(dir + "/" + file)
         count += 1
@@ -155,6 +155,29 @@ def move_image_by_csv(
             des = "40-60"
         else:
             des = "60-100"
+        des = des_dir + des + "/" + os.path.basename(target)
+        shutil.move(target, des)
+
+
+def move_image_by_csv_for_nsfw(
+        des_dir="F:/Data/Category/",
+        setting_file="tmp.csv",
+        format=['location', 'nsfw']
+    ):
+    data = pd.read_csv(setting_file, names=format)
+    for index, row in data.iterrows():
+        print("{} {}".format(row[0], row[1]))
+        pro = row[1]
+        target = row[0]
+        des = ""
+        if pro < 0.3:
+            des = "pg0"
+        elif pro < 0.6:
+            des = "pg30"
+        elif pro < 0.9:
+            des = "pg60"
+        else:
+            des = "pg90"
         des = des_dir + des + "/" + os.path.basename(target)
         shutil.move(target, des)
 
