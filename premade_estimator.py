@@ -20,6 +20,8 @@ from matplotlib import gridspec
 ##########################################################
 """An Example of a DNNClassifier for the Iris dataset."""
 
+# python classify_nsfw.py -m data/open_nsfw-weights.npy -l tensorflow test.jpg
+
 # Setting Up Comand Line Arguments
 #parser = argparse.ArgumentParser()
 # Default Batch Size : 100
