@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import math
 import time
 start = time.time()
 import argparse
@@ -105,6 +106,7 @@ def nsfw_main(setting_file="tmp.csv"):
     return 0
 
 def file_size(folder="F:/Data/Favorite"):
+    pd.options.display.float_format = '{:,.2f}'.format
     df = pd.DataFrame()
     files = os.listdir(folder)
     ta = []
