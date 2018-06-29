@@ -33,15 +33,26 @@ from image_utils import create_yahoo_image_loader
 # Default Step Size : 1000
 #parser.add_argument('--train_steps', default=1000, type=int,help='number of training steps')
 
+def is_extension_correct(path, list):
+    root, ext = os.path.splitext(path)
+    if ext.lower().endswith(list):
+        return True
+    else:
+        return False
+
+
 def nsfw_main(setting_file="tmp.csv"):
 
     data = pd.read_csv(setting_file, names=['location', 'nsfw'])
     tarray = []
 
-    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
     IMAGE_LOADER_TENSORFLOW = "tensorflow"
     class args:
         pass
+
+
     args.input_file = "girl.jpg"
     args.model_weights = "data/open_nsfw-weights.npy"
     args.image_loader = IMAGE_LOADER_TENSORFLOW
@@ -50,7 +61,13 @@ def nsfw_main(setting_file="tmp.csv"):
     # This is important for reset graph
     tf.reset_default_graph()
 
-    with tf.Session() as sess:
+    config = tf.ConfigProto(
+        gpu_options=tf.GPUOptions(
+            visible_device_list="0",  # specify GPU number
+            allow_growth=True
+        )
+    )
+    with tf.Session(config=config) as sess:
 
         input_type = InputType[args.input_type.upper()]
         model.build(weights_path=args.model_weights, input_type=input_type)
@@ -86,6 +103,22 @@ def nsfw_main(setting_file="tmp.csv"):
     data.to_csv(setting_file, index=False, header=False)
     print(data)
     return 0
+
+def file_size(folder="F:/Data/Favorite"):
+    df = pd.DataFrame()
+    files = os.listdir(folder)
+    ta = []
+    tab = []
+    for file in files:
+        size = os.path.getsize(folder + "/" + file)
+        ta.append(file)
+        tab.append(math.log10(size))
+        # print(("{} {}").format(file,size))
+    df["name"] = ta
+    df["size"] = tab
+    print(df.describe())
+    df.hist("size",bins=10)
+    return df
 
 def get_csv(dir="F:/Data/Main", output="C:/Users\Hijiri/ml\models/official/image_classifier/csv_data/image_files.csv"):
     files = os.listdir(dir)
