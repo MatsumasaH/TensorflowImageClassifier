@@ -23,6 +23,9 @@ from model import OpenNsfwModel, InputType
 from image_utils import create_tensorflow_image_loader
 from image_utils import create_yahoo_image_loader
 ##########################################################
+from PIL import Image
+import piexif
+##########################################################
 """An Example of a DNNClassifier for the Iris dataset."""
 
 # python classify_nsfw.py -m data/open_nsfw-weights.npy -l tensorflow test.jpg
@@ -41,6 +44,10 @@ def is_extension_correct(path, list):
     else:
         return False
 
+def change_title(file,title):
+    exif_dict = {"0th":{piexif.ImageIFD.ImageDescription: title}}
+    exif_bytes = piexif.dump(exif_dict)
+    piexif.insert(exif_bytes, file)
 
 def nsfw_main(setting_file="tmp.csv"):
 
